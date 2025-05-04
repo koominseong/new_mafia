@@ -5,9 +5,12 @@ class Player:
         self.name = name
         self.role = None
         self.is_alive = True
+        self.chat_log = []
 
     def assign_role(self, role):
         self.role = role
+        self.chat_log = []
+        self.is_alive = True
 
     def vote(self, alive_players):
         print(f"\n{self.name}님의 투표 차례입니다.")
@@ -27,8 +30,10 @@ class Player:
                 pass
             print("잘못된 입력입니다. 다시 시도하세요.")
     def speak(self):
-        print(f"{self.name}님이 발언합니다.")
-        return
+        return f"{self.name}님이 발언합니다."
+
+    def listen(self, name, message):
+        self.chat_log.append({"name" : name, "chat" : message})
 
     def __str__(self):
         return f"{self.name} - {'Alive' if self.is_alive else 'Dead'} - {self.role if not self.is_alive else '???'}"
@@ -66,12 +71,16 @@ class Game:
 
         while True:
             try:
-                target_idx = int(input("말할 사람의 번호를 입력하세요 (토론을 멈추려면 q를 입력하세요: "))
+                target_idx = input("말할 사람의 번호를 입력하세요 (토론을 멈추려면 q를 입력하세요): ")
                 if target_idx == "q":
                     print("토론을 종료합니다.")
                     break
+                target_idx = int(target_idx)
                 if 0 <= target_idx < len(alive_players):
-                    alive_players[target_idx].speak()
+                    message = alive_players[target_idx].speak()
+                    for p in alive_players:
+                        p.listen(alive_players[target_idx].name, message)
+                    print(f"\n{alive_players[target_idx].name}님 : {message}")
                 else :
                     print("\n잘못된 번호입니다. 다시 입력하세요.")
 
