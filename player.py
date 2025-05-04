@@ -26,6 +26,9 @@ class Player:
             except:
                 pass
             print("잘못된 입력입니다. 다시 시도하세요.")
+    def speak(self):
+        print(f"{self.name}님이 발언합니다.")
+        return
 
     def __str__(self):
         return f"{self.name} - {'Alive' if self.is_alive else 'Dead'} - {self.role if not self.is_alive else '???'}"
@@ -55,6 +58,27 @@ class Game:
         print(f"\n☀️ 낮 {self.day_count}이 되었습니다. 토론을 시작합니다.")
         # 여기요여기
         alive_players = self.get_alive_players()
+
+        print(f"\n누구에게 말을 시킬까요?")
+        print("생존자:")
+        for idx, p in enumerate(alive_players):
+            print(f"{idx}. {p.name}")
+
+        while True:
+            try:
+                target_idx = int(input("말할 사람의 번호를 입력하세요 (토론을 멈추려면 q를 입력하세요: "))
+                if target_idx == "q":
+                    print("토론을 종료합니다.")
+                    break
+                if 0 <= target_idx < len(alive_players):
+                    alive_players[target_idx].speak()
+                else :
+                    print("\n잘못된 번호입니다. 다시 입력하세요.")
+
+            except:
+                pass
+                print("\n잘못된 입력입니다. 다시 시도하세요.")
+
         votes = {}
 
         for player in alive_players:
