@@ -53,6 +53,7 @@ class Game:
 
     def run_day(self):
         print(f"\n☀️ 낮 {self.day_count}이 되었습니다. 토론을 시작합니다.")
+        # 여기요여기
         alive_players = self.get_alive_players()
         votes = {}
 
