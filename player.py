@@ -13,17 +13,16 @@ class Player:
         print(f"\n{self.name}님의 투표 차례입니다.")
         print("투표 대상:")
         for idx, p in enumerate(alive_players):
-            if p.name != self.name:
-                print(f"{idx}. {p.name}")
+            print(f"{idx}. {p.name}")
         while True:
             try:
                 target_idx = int(input("투표할 플레이어 번호를 입력하세요: "))
                 if 0 <= target_idx < len(alive_players):
                     target = alive_players[target_idx]
-                    if target.name != self.name and target.is_alive:
+                    if target.name != target.is_alive:
                         return target
                     else:
-                        print("자기 자신이거나 사망자입니다. 다시 선택하세요.")
+                        print("사망자입니다. 다시 선택하세요.")
             except:
                 pass
             print("잘못된 입력입니다. 다시 시도하세요.")
@@ -37,7 +36,7 @@ class Game:
         self.day_count = 1
 
     def assign_roles(self):
-        roles = ['mafia'] * 2 + ['citizen'] * 3
+        roles = ['mafia'] * 1 + ['citizen'] * 4
         random.shuffle(roles)
         for player, role in zip(self.players, roles):
             player.assign_role(role)
@@ -70,7 +69,7 @@ class Game:
         else:
             target = candidates[0]
             target.is_alive = False
-            print(f"\n🪦 {target.name} 님이 처형되었습니다. (정체: {target.role})")
+            print(f"\n🪦 {target.name} 님이 처형되었습니다.")
 
     def run_night(self):
         mafias = self.get_mafias()
