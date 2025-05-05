@@ -15,23 +15,11 @@ class Player:
         self.is_alive = True
 
     def vote(self, alive_players):
-        print(f"\n{self.name}님의 투표 차례입니다.")
-        print("투표 대상:")
-        for idx, p in enumerate(alive_players):
-            print(f"{idx}. {p.name}")
-        while True:
-            try:
-                target_idx = int(input("투표할 플레이어 번호를 입력하세요: "))
-                if 0 <= target_idx < len(alive_players):
-                    target = alive_players[target_idx]
-                    if target.name != target.is_alive:
-                        return target
-                    else:
-                        print("사망자입니다. 다시 선택하세요.")
-            except:
-                pass
-            print("잘못된 입력입니다. 다시 시도하세요.")
-
+        # alive_players = game.get_alive_players()
+        # message = chat_ai.voter_gpt(alive_players[0], alive_players)
+        #
+        message = chat_ai.voter_gpt(self, alive_players)
+        return message
 
     def speak(self, alive_players):
         message = chat_ai.conversation_gpt(self, alive_players)
@@ -104,10 +92,12 @@ class Game:
         votes = {}
 
         for player in alive_players:
-            target = player.vote(alive_players)
+            message = player.vote(alive_players)
+            target = message["number"]
             votes[target] = votes.get(target, 0) + 1
+            print(f"\n{player.name} 님이 {alive_players[target].name}에게 투표했습니다. 이유는 {message["reason"]}입니다.")
             for p in alive_players:
-                p.listen("vote", player.name, f"{player.name} 님이 {target.name}에게 투표했습니다.", {"voted_for": target.name})
+                p.listen("vote", player.name, f"{player.name} 님이 {alive_players[target].name}에게 투표했습니다. 이유는 {message["reason"]}입니다.", {"voted_for": alive_players[target].name})
 
         # 최다득표자 찾기
         max_votes = max(votes.values())
@@ -118,7 +108,7 @@ class Game:
             for p in alive_players:
                 p.listen("execute", "system", "동률 발생으로 처형이 무효되었습니다.")
         else:
-            target = candidates[0]
+            target = alive_players[candidates[0]]
             target.is_alive = False
             print(f"\n🪦 {target.name} 님이 처형되었습니다.")
             for p in self.get_alive_players():

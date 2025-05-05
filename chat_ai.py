@@ -17,7 +17,7 @@ GPT_MODEL = 'gpt-4o'
 
 chatGPT = ChatOpenAI(
     model=GPT_MODEL,
-    temperature=0,
+    temperature=0.7,
     verbose=False,
     max_tokens=4096,
     timeout=None
@@ -124,9 +124,64 @@ def conversation_gpt(player, alive_players, chat_max_token_limit=65536):
         json_str = match.group(0)
         parsed = json.loads(json_str)
     else:
-        parsed = {"speaker": "", "chat": "", "predictions": "", "point": ""}
+        parsed = {"chat": ""}
 
 
     return parsed
 
+
+# Response Type 정의
+class voter_Response_Type(BaseModel):
+    reason: str = Field(description="Why the voter voted the corresponding person")
+    number: int = Field(description="The voter voted the corresponding person")
+
+
+def voter_gpt(player, alive_players, chat_max_token_limit=65536):
+    chat_history = player.chat_log
+
+    alive_players_str = ""
+    for idx, p in enumerate(alive_players):
+        alive_players_str += f"{idx}. {p.name}\n"
+
+    # while num_tokens_from_messages(str(chat_history), model=GPT_MODEL) > chat_max_token_limit:
+    #     chat_history.pop(0)
+
+    SYS_PROMPT = f"""You are currently playing a game of Mafia.
+    A game of Mafia is played between citizens and mafia.
+    During the day, the citizen and the mafia have conversations without knowing each other's identities.
+    The citizen must try to figure out who the mafia is from their conversations,
+    and the mafia must trick their opponents into conversations and figure out that the other person is a mafia.
+    Speaking Korean
+
+If you are a citizen  
+Based on the conversations you had during the day, gauge your suspicion of the remaining characters and vote for the person you think is the most likely mafia based on your suspicion.
+
+If you're a mafia
+Vote for the person you think others suspect is most likely to be mafia, other than yourself
+
+    Your name is “{player.name}”.
+    You are “{player.role}”
+
+    The current remaining players are :
+    {alive_players_str}
+
+    Below is the conversation and game state so far.
+    {chat_history}
+    """
+
+    output_parser = PydanticOutputParser(pydantic_object=voter_Response_Type)
+
+    chatml = [SystemMessage(content=SYS_PROMPT)] \
+             + [SystemMessage(content=output_parser.get_format_instructions())]
+
+    result = chatGPT.invoke(chatml)
+
+    match = re.search(r'\{.*\}', result.content, re.DOTALL)
+    if match:
+        json_str = match.group(0)
+        parsed = json.loads(json_str)
+    else:
+        parsed = {"reason": "","number": -1}
+
+    return parsed
 
