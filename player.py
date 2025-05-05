@@ -30,6 +30,7 @@ class Player:
                 pass
             print("잘못된 입력입니다. 다시 시도하세요.")
 
+
     def speak(self):
         return f"{self.name}님이 발언합니다."
 
