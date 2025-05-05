@@ -1,6 +1,6 @@
 import random
-import chat_ai
 import env_set
+import chat_ai
 
 class Player:
     def __init__(self, name):
