@@ -1,4 +1,6 @@
 import random
+import chat_ai
+import env_set
 
 class Player:
     def __init__(self, name):
@@ -31,8 +33,9 @@ class Player:
             print("잘못된 입력입니다. 다시 시도하세요.")
 
 
-    def speak(self):
-        return f"{self.name}님이 발언합니다."
+    def speak(self, alive_players):
+        message = chat_ai.conversation_gpt(self, alive_players)
+        return message
 
     def listen(self, event_type, actor, message, metadata=None):
         log_entry = {
@@ -86,7 +89,7 @@ class Game:
                     break
                 target_idx = int(target_idx)
                 if 0 <= target_idx < len(alive_players):
-                    message = alive_players[target_idx].speak()
+                    message = alive_players[target_idx].speak(alive_players)
                     for p in alive_players:
                         p.listen(alive_players[target_idx].name, message)
                     print(f"\n{alive_players[target_idx].name}님 : {message}")
