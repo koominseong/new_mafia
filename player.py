@@ -29,11 +29,18 @@ class Player:
             except:
                 pass
             print("잘못된 입력입니다. 다시 시도하세요.")
+
     def speak(self):
         return f"{self.name}님이 발언합니다."
 
-    def listen(self, name, message):
-        self.chat_log.append({"name" : name, "chat" : message})
+    def listen(self, event_type, actor, message, metadata=None):
+        log_entry = {
+            "event": event_type,
+            "actor": actor,
+            "message": message,
+            "metadata": metadata or {}
+        }
+        self.chat_log.append(log_entry)
 
     def __str__(self):
         return f"{self.name} - {'Alive' if self.is_alive else 'Dead'} - {self.role if not self.is_alive else '???'}"
@@ -62,6 +69,8 @@ class Game:
     def run_day(self):
         print(f"\n☀️ 낮 {self.day_count}이 되었습니다. 토론을 시작합니다.")
         alive_players = self.get_alive_players()
+        for p in alive_players:
+            p.listen("start_day", "system", f"낮 {self.day_count}이 시작되었습니다.", {"day": self.day_count})
 
         print(f"\n누구에게 말을 시킬까요?")
         print("생존자:")
@@ -92,6 +101,8 @@ class Game:
         for player in alive_players:
             target = player.vote(alive_players)
             votes[target] = votes.get(target, 0) + 1
+            for p in alive_players:
+                p.listen("vote", player.name, f"{player.name} 님이 {target.name}에게 투표했습니다.", {"voted_for": target.name})
 
         # 최다득표자 찾기
         max_votes = max(votes.values())
@@ -99,10 +110,14 @@ class Game:
 
         if len(candidates) > 1:
             print("\n⚠️ 동률이 발생하여 아무도 처형되지 않습니다.")
+            for p in alive_players:
+                p.listen("execute", "system", "동률 발생으로 처형이 무효되었습니다.")
         else:
             target = candidates[0]
             target.is_alive = False
             print(f"\n🪦 {target.name} 님이 처형되었습니다.")
+            for p in self.get_alive_players():
+                p.listen("execute", "system", f"{target.name} 님이 처형되었습니다.", {"executed": target.name})
 
     def run_night(self):
         mafias = self.get_mafias()
@@ -110,6 +125,8 @@ class Game:
             return
 
         print("\n🌙 밤이 되었습니다. 마피아는 시민 중 한 명을 선택해 제거하세요.")
+        for p in self.get_alive_players():
+            p.listen("start_night", "system", "밤이 시작되었습니다.", {"day": self.day_count})
 
         alive_players = self.get_alive_players()
         citizens = [p for p in alive_players if p.role != 'mafia']
@@ -129,6 +146,8 @@ class Game:
                     target = citizens[target_idx]
                     target.is_alive = False
                     print(f"\n💀 밤사이 {target.name} 님이 살해당했습니다.")
+                    for p in self.get_alive_players():
+                        p.listen("kill", mafia.name, f"{target.name} 님이 밤에 사망했습니다.", {"target": target.name})
                     break
                 else:
                     print("잘못된 번호입니다.")
