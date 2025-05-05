@@ -61,7 +61,6 @@ class Game:
 
     def run_day(self):
         print(f"\n☀️ 낮 {self.day_count}이 되었습니다. 토론을 시작합니다.")
-        # 여기요여기
         alive_players = self.get_alive_players()
 
         print(f"\n누구에게 말을 시킬까요?")
@@ -109,16 +108,32 @@ class Game:
         mafias = self.get_mafias()
         if not mafias:
             return
-        print("\n🌙 밤이 되었습니다. 마피아들은 희생자를 정해주세요.")
+
+        print("\n🌙 밤이 되었습니다. 마피아는 시민 중 한 명을 선택해 제거하세요.")
+
         alive_players = self.get_alive_players()
         citizens = [p for p in alive_players if p.role != 'mafia']
 
         if not citizens:
             return
 
-        target = random.choice(citizens)
-        target.is_alive = False
-        print(f"\n💀 밤사이 {target.name} 님이 살해당했습니다.")
+        mafia = mafias[0]  # 한 명 마피아만 있다고 가정
+        print(f"\n{mafia.name} 님의 선택 차례입니다.")
+        for idx, p in enumerate(citizens):
+            print(f"{idx}. {p.name}")
+
+        while True:
+            try:
+                target_idx = int(input("죽일 시민의 번호를 입력하세요: "))
+                if 0 <= target_idx < len(citizens):
+                    target = citizens[target_idx]
+                    target.is_alive = False
+                    print(f"\n💀 밤사이 {target.name} 님이 살해당했습니다.")
+                    break
+                else:
+                    print("잘못된 번호입니다.")
+            except:
+                print("입력이 잘못되었습니다.")
 
     def check_winner(self):
         mafias = self.get_mafias()
