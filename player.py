@@ -134,20 +134,28 @@ class Game:
         for idx, p in enumerate(citizens):
             print(f"{idx}. {p.name}")
 
-        while True:
-            try:
-                target_idx = int(input("죽일 시민의 번호를 입력하세요: "))
-                if 0 <= target_idx < len(citizens):
-                    target = citizens[target_idx]
-                    target.is_alive = False
-                    print(f"\n💀 밤사이 {target.name} 님이 살해당했습니다.")
-                    for p in self.get_alive_players():
-                        p.listen("kill", mafia.name, f"{target.name} 님이 밤에 사망했습니다.", {"target": target.name})
-                    break
-                else:
-                    print("잘못된 번호입니다.")
-            except:
-                print("입력이 잘못되었습니다.")
+        message = chat_ai.murderer_gpt(mafia, citizens)
+        target_idx = message['number']
+        if 0 <= target_idx < len(citizens):
+            target = citizens[target_idx]
+            target.is_alive = False
+            print(f"\n💀 밤사이 {target.name} 님이 살해당했습니다.")
+            for p in self.get_alive_players():
+                p.listen("kill", mafia.name, f"{target.name} 님이 밤에 사망했습니다.", {"target": target.name})
+        # while True:
+        #     try:
+        #         target_idx = int(input("죽일 시민의 번호를 입력하세요: "))
+        #         if 0 <= target_idx < len(citizens):
+        #             target = citizens[target_idx]
+        #             target.is_alive = False
+        #             print(f"\n💀 밤사이 {target.name} 님이 살해당했습니다.")
+        #             for p in self.get_alive_players():
+        #                 p.listen("kill", mafia.name, f"{target.name} 님이 밤에 사망했습니다.", {"target": target.name})
+        #             break
+        #         else:
+        #             print("잘못된 번호입니다.")
+        #     except:
+        #         print("입력이 잘못되었습니다.")
 
     def check_winner(self):
         mafias = self.get_mafias()

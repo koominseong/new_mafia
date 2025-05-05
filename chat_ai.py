@@ -185,3 +185,54 @@ Vote for the person you think others suspect is most likely to be mafia, other t
 
     return parsed
 
+
+# Response Type 정의
+class murderer_Response_Type(BaseModel):
+    number: int = Field(description="The murderer murdered the corresponding person")
+
+
+def murderer_gpt(player, alive_players, chat_max_token_limit=65536):
+    chat_history = player.chat_log
+
+    alive_players_str = ""
+    for idx, p in enumerate(alive_players):
+        alive_players_str += f"{idx}. {p.name}\n"
+
+    # while num_tokens_from_messages(str(chat_history), model=GPT_MODEL) > chat_max_token_limit:
+    #     chat_history.pop(0)
+
+    SYS_PROMPT = f"""You are currently playing a game of Mafia.
+    A game of Mafia is played between citizens and mafia.
+    During the day, the citizen and the mafia have conversations without knowing each other's identities.
+    The citizen must try to figure out who the mafia is from their conversations,
+    and the mafia must trick their opponents into conversations and figure out that the other person is a mafia.
+    The mafia must kill someone during the night without revealing their identity. Choose the person who will be the least suspicious when you kill them and kill them.
+    Speaking Korean
+
+
+    Your name is “{player.name}”.
+    You are “{player.role}”
+
+    The current remaining players are :
+    {alive_players_str}
+
+    Below is the conversation and game state so far.
+    {chat_history}
+    """
+
+    output_parser = PydanticOutputParser(pydantic_object=murderer_Response_Type)
+
+    chatml = [SystemMessage(content=SYS_PROMPT)] \
+             + [SystemMessage(content=output_parser.get_format_instructions())]
+
+    result = chatGPT.invoke(chatml)
+
+    match = re.search(r'\{.*\}', result.content, re.DOTALL)
+    if match:
+        json_str = match.group(0)
+        parsed = json.loads(json_str)
+    else:
+        parsed = {"number": -1}
+
+    return parsed
+
