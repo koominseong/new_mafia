@@ -91,7 +91,7 @@ class Game:
                 if 0 <= target_idx < len(alive_players):
                     message = alive_players[target_idx].speak(alive_players)
                     for p in alive_players:
-                        p.listen(alive_players[target_idx].name, message)
+                        p.listen("talk", speaker.name, message, {"speaker": speaker.name})
                     print(f"\n{alive_players[target_idx].name}님 : {message}")
                 else :
                     print("\n잘못된 번호입니다. 다시 입력하세요.")
