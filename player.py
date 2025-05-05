@@ -89,6 +89,7 @@ class Game:
                     break
                 target_idx = int(target_idx)
                 if 0 <= target_idx < len(alive_players):
+                    speaker = alive_players[target_idx]
                     message = alive_players[target_idx].speak(alive_players)
                     for p in alive_players:
                         p.listen("talk", speaker.name, message, {"speaker": speaker.name})
