@@ -35,7 +35,7 @@ class Player:
 
     def speak(self, alive_players):
         message = chat_ai.conversation_gpt(self, alive_players)
-        return message
+        return message["chat"]
 
     def listen(self, event_type, actor, message, metadata=None):
         log_entry = {
